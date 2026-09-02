@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mis Rutinas de Gym</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap">
+<style>
+  :root {
+    --bg: #0b0b0d;
+    --card: #1c1c1f;
+    --card-2: #242428;
+    --card-3: #2a2a2f;
+    --text: #f5f4f0;
+    --text-dim: #8c8c92;
+    --accent: #ff5a1f;
+    --accent-hover: #ff7a45;
+    --accent-soft: rgba(255, 90, 31, 0.15);
+    --success: #b6ff3c;
+    --danger: #ff3b3b;
+    --border: #2c2c31;
+    --radius: 16px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    background-image: radial-gradient(circle at 50% 0%, rgba(255, 90, 31, 0.08), transparent 55%);
+    color: var(--text);
+    padding-bottom: 90px;
+  }
+
+  h1, h2, .routine-name, button, .app-title {
+    font-family: "Oswald", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+
+  header {
+    padding: 22px 20px 14px;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  header h1.app-title {
+    margin: 0;
+    font-size: 1.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    line-height: 1;
+  }
+
+  header h1.app-title span {
+    color: var(--accent);
+  }
+
+  header p {
+    margin: 5px 0 0;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .header-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  .btn-reset {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 7px 10px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .btn-reset:hover {
+    color: var(--text);
+    border-color: var(--accent);
+  }
+
+  /* Weekly progress */
+  .progress-section {
+    margin-top: 18px;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+
+  .progress-text {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+  }
+
+  .progress-text b {
+    color: var(--accent);
+  }
+
+  .progress-track {
+    height: 8px;
+    background: var(--card-2);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+    border-radius: 20px;
+    transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  main {
+    padding: 12px 16px;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .empty-state {
+    text-align: center;
+    color: var(--text-dim);
+    padding: 60px 20px;
+  }
+
+  .routine-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.5);
+    transition: border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  }
+
+  .routine-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45), 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+
+  .routine-card:active {
+    transform: translateY(0) scale(0.995);
+  }
+
+  .routine-card.done-today {
+    border-color: var(--success);
+    box-shadow: 0 4px 14px rgba(182, 255, 60, 0.08), 0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+
+  .routine-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    cursor: pointer;
+    gap: 10px;
+  }
+
+  .routine-head-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .routine-icon {
+    font-size: 1.7rem;
+    line-height: 1;
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--card-2);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+
+  .routine-name-wrap {
+    min-width: 0;
+  }
+
+  .routine-name {
+    font-weight: 600;
+    font-size: 1.15rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+  }
+
+  .badge-done {
+    background: var(--success);
+    color: #10230a;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 3px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+    display: inline-block;
+    margin-top: 3px;
+  }
+
+  .chevron {
+    color: var(--text-dim);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .routine-card.open .chevron {
+    transform: rotate(180deg);
+    color: var(--accent);
+  }
+
+  .routine-body {
+    display: none;
+    padding: 0 16px 16px;
+  }
+
+  .routine-card.open .routine-body {
+    display: block;
+  }
+
+  .routine-notes-wrap {
+    margin-bottom: 12px;
+  }
+
+  .routine-notes-wrap textarea {
+    margin-top: 0;
+    font-size: 0.85rem;
+  }
+
+  .exercise-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    background: var(--card-2);
+    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+    gap: 10px;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .exercise-row:hover {
+    border-color: var(--border);
+    background: var(--card-3);
+  }
+
+  .exercise-info {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .exercise-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    overflow-wrap: break-word;
+  }
+
+  .exercise-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 7px;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  .chip-weight {
+    background: var(--accent-soft);
+    color: var(--accent-hover);
+    border: 1px solid rgba(255, 90, 31, 0.35);
+  }
+
+  .chip-reps {
+    background: var(--card-3);
+    color: var(--text);
+    border: 1px solid var(--border);
+    font-weight: 600;
+  }
+
+  .exercise-notes {
+    color: var(--text-dim);
+    font-size: 0.78rem;
+    margin-top: 6px;
+    font-style: italic;
+    overflow-wrap: break-word;
+  }
+
+  .exercise-variant {
+    font-size: 0.78rem;
+    margin-top: 6px;
+    padding-left: 9px;
+    border-left: 2px solid var(--accent);
+    overflow-wrap: break-word;
+    color: var(--text-dim);
+  }
+
+  .exercise-variant b {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .exercise-variant .variant-note {
+    display: block;
+    font-style: italic;
+    margin-top: 2px;
+  }
+
+  .exercise-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+
+  .icon-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 8px;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+
+  .icon-btn.btn-delete:hover { color: var(--danger); background: rgba(255, 59, 59, 0.1); }
+  .icon-btn.btn-edit:hover { color: var(--accent); background: var(--accent-soft); }
+
+  .add-exercise-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .add-exercise-form input {
+    grid-column: span 1;
+  }
+
+  .add-exercise-form input.ex-name,
+  .add-exercise-form input.ex-notes {
+    grid-column: span 2;
+  }
+
+  .add-exercise-form button {
+    grid-column: span 2;
+  }
+
+  input, textarea {
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    width: 100%;
+    font-family: inherit;
+    transition: border-color 0.15s ease;
+  }
+
+  textarea {
+    resize: vertical;
+    margin-top: 10px;
+  }
+
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  button {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+
+  button:active {
+    transform: scale(0.97);
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #120803;
+  }
+
+  .btn-primary:hover {
+    background: var(--accent-hover);
+    box-shadow: 0 4px 14px rgba(255, 90, 31, 0.35);
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .btn-outline:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+  }
+
+  .btn-small {
+    padding: 5px 10px;
+    font-size: 0.7rem;
+  }
+
+  .btn-done {
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    padding: 10px 12px;
+  }
+
+  .btn-done:hover {
+    border-color: var(--success);
+    color: var(--success);
+  }
+
+  .btn-done.active {
+    background: var(--success);
+    color: #10230a;
+    border-color: var(--success);
+  }
+
+  .row-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .row-actions button { flex: 1; }
+
+  .fab {
+    position: fixed;
+    bottom: 24px;
+    right: 20px;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #120803;
+    font-size: 2rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 20px rgba(255, 90, 31, 0.45);
+    z-index: 20;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+
+  .fab:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255, 90, 31, 0.55);
+  }
+
+  .fab:active {
+    transform: scale(0.94);
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 30;
+    overflow-y: auto;
+  }
+
+  .modal-overlay.show {
+    display: flex;
+  }
+
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px 20px 0 0;
+    padding: 20px;
+    width: 100%;
+    max-width: 640px;
+    animation: slideUp 0.2s ease-out;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .modal h2 {
+    margin: 0 0 14px;
+    font-size: 1.3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .modal .row-actions {
+    margin-top: 18px;
+  }
+
+  .edit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .variants-section {
+    margin-top: 16px;
+  }
+
+  .variants-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-dim);
+  }
+
+  .variant-row {
+    background: var(--card-3);
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 8px;
+  }
+
+  .variant-row-top {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .variant-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+
+  .no-variants-msg {
+    color: var(--text-dim);
+    font-size: 0.82rem;
+    margin-bottom: 8px;
+  }
+
+  @media (min-width: 480px) {
+    .modal-overlay { align-items: center; }
+    .modal { border-radius: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div>
+      <h1 class="app-title">MIS <span>RUTINAS</span></h1>
+      <p>Organiza tus días de entreno</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-reset" id="restore-defaults">Restaurar 5 días</button>
+      <button class="btn-reset" id="load-sample-data">Cargar mis datos</button>
+    </div>
+  </div>
+  <div class="progress-section">
+    <div class="progress-label">
+      <span class="progress-text" id="progress-text"></span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+  </div>
+</header>
+
+<main id="routines-container"></main>
+
+<div class="fab" id="fab-add">+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h2>Nueva rutina</h2>
+    <input type="text" id="new-routine-name" placeholder="Ej. Día de piernas" maxlength="40">
+    <div class="row-actions">
+      <button class="btn-outline" id="cancel-routine">Cancelar</button>
+      <button class="btn-primary" id="confirm-routine">Crear</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="exercise-modal-overlay">
+  <div class="modal">
+    <h2>Editar ejercicio</h2>
+    <input type="text" id="edit-ex-name" placeholder="Nombre del ejercicio" maxlength="60">
+    <div class="edit-grid">
+      <input type="number" id="edit-ex-weight" placeholder="Peso (kg)" min="0" step="0.5">
+      <input type="text" id="edit-ex-reps" placeholder="Series/reps (ej. 3x12 o 9/8/7)" maxlength="60">
+    </div>
+    <textarea id="edit-ex-notes" placeholder="Notas (opcional)" maxlength="300" rows="2"></textarea>
+
+    <div class="variants-section">
+      <div class="variants-header">
+        <span>Variantes / otros gimnasios</span>
+        <button class="btn-outline btn-small" id="add-variant-btn">+ Variante</button>
+      </div>
+      <div id="variants-list"></div>
+    </div>
+
+    <div class="row-actions">
+      <button class="btn-outline" id="cancel-exercise-edit">Cancelar</button>
+      <button class="btn-primary" id="save-exercise-edit">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'gym-routines';
+
+  const DEFAULT_ROUTINE_NAMES = [
+    'Pecho y tríceps',
+    'Espalda y bíceps',
+    'Pierna',
+    'Hombro',
+    'Pecho y espalda'
+  ];
+
+  const MUSCLE_ICONS = {
+    'Pecho y tríceps': '🏋️',
+    'Espalda y bíceps': '🧗',
+    'Pierna': '🦵',
+    'Hombro': '🤾',
+    'Pecho y espalda': '🥊'
+  };
+
+  function pickIcon(name) {
+    if (MUSCLE_ICONS[name]) return MUSCLE_ICONS[name];
+    const n = (name || '').toLowerCase();
+    if (n.includes('pierna') || n.includes('leg')) return '🦵';
+    if (n.includes('hombro')) return '🤾';
+    if (n.includes('espalda') || n.includes('back')) return '🧗';
+    if (n.includes('pecho') || n.includes('chest')) return '🏋️';
+    if (n.includes('bícep') || n.includes('bicep')) return '💪';
+    if (n.includes('trícep') || n.includes('tricep')) return '💥';
+    if (n.includes('abs') || n.includes('core') || n.includes('abdom')) return '🔥';
+    if (n.includes('cardio')) return '🏃';
+    return '🔥';
+  }
+
+  // Datos reales facilitados por el usuario. "Espalda" se guarda dentro de
+  // la rutina por defecto "Espalda y bíceps" (aún sin ejercicios de bíceps).
+  const SAMPLE_ROUTINES_DATA = [
+    {
+      name: 'Pecho y tríceps',
+      exercises: [
+        {
+          name: 'Press Smith',
+          weight: 25,
+          reps: '9/8/7',
+          notes: 'Descarga al fallo (le pasa por no descansar bien). Objetivo: llegar a series de 10.',
+          variants: [
+            { label: 'Variante con mancuernas', weight: 30, reps: '7/7/6', note: '' }
+          ]
+        },
+        {
+          name: 'Cable unilateral para inferiores',
+          weight: 11.5,
+          reps: '4x12',
+          notes: 'Focalizar en el lado derecho, ir más despacio en el movimiento.',
+          variants: [
+            { label: 'En Sanlúcar', weight: 23, reps: '12/12/12/12', note: 'Al intentar subir peso se pierde técnica.' }
+          ]
+        },
+        {
+          name: 'Máquina press convergente',
+          weight: 59,
+          reps: '8/8/7 + 1 serie al fallo con descarga',
+          notes: 'Asiento en posición 4. Descansar entre series.',
+          variants: []
+        },
+        {
+          name: 'Aperturas en máquina',
+          weight: 45,
+          reps: '3x12',
+          notes: 'Por molestia en el hombro.',
+          variants: []
+        },
+        {
+          name: 'Rollo back tríceps',
+          weight: 12.5,
+          reps: '3x12',
+          notes: '',
+          variants: []
+        },
+        {
+          name: 'Press francés en polea (agarre V raro)',
+          weight: 20.3,
+          reps: '3x12',
+          notes: '',
+          variants: [
+            { label: 'En Sanlúcar', weight: 41, reps: '9/8/7', note: '' }
+          ]
+        },
+        {
+          name: 'Press de tríceps normal',
+          weight: 45,
+          reps: '3x12 + descarga',
+          notes: '',
+          variants: []
+        }
+      ]
+    },
+    {
+      name: 'Espalda y bíceps',
+      notes: 'Alterna el orden de los ejercicios de bíceps entre sesiones (curl predicador, curl sentado, martillo).',
+      exercises: [
+        {
+          name: 'Jalón al pecho',
+          weight: '',
+          reps: '',
+          notes: '',
+          variants: [
+            { label: 'En Sanlúcar', weight: 90, reps: '8/8/7', note: '' }
+          ]
+        },
+        {
+          name: 'Remo abierto en máquina',
+          weight: 66,
+          reps: '10/10/9',
+          notes: 'Buena focalización.',
+          variants: [
+            { label: 'En Sanlúcar', weight: 64, reps: '12/12/8', note: '' }
+          ]
+        },
+        {
+          name: 'Pull over',
+          weight: 24.3,
+          reps: '3x12',
+          notes: 'Subiendo peso progresivamente.',
+          variants: [
+            { label: 'En Sanlúcar (máquina del centro)', weight: 50, reps: '3x12', note: '' }
+          ]
+        },
+        {
+          name: 'Hombro posterior cruces',
+          weight: 9,
+          reps: '3x12',
+          notes: '',
+          variants: []
+        },
+        {
+          name: 'Curl predicador en banco (unilateral con mancuernas)',
+          weight: 12,
+          reps: '12/11/10',
+          notes: 'Peso por lado.',
+          variants: [
+            { label: 'Variante con menos peso', weight: 10, reps: '8/7+1/6+2', note: 'Peso por lado.' }
+          ]
+        },
+        {
+          name: 'Curl sentado',
+          weight: 10,
+          reps: '12/12 + superserie',
+          notes: '',
+          variants: [
+            { label: 'Segunda parte (bajada de peso)', weight: 8, reps: '3x12', note: '' }
+          ]
+        },
+        {
+          name: 'Martillo en polea (unilateral)',
+          weight: 14,
+          reps: '3x10',
+          notes: '',
+          variants: []
+        }
+      ]
+    },
+    {
+      name: 'Pierna',
+      notes: '',
+      exercises: [
+        {
+          name: 'Aductores',
+          weight: 73,
+          reps: '12/10+2/8+4',
+          notes: '',
+          variants: [
+            { label: 'En Sanlúcar', weight: 70, reps: '3x16', note: '' }
+          ]
+        },
+        {
+          name: 'Curl femoral',
+          weight: 66,
+          reps: '12/11/7',
+          notes: '',
+          variants: [
+            { label: 'Bajada de peso (misma sesión)', weight: 52, reps: '3x12', note: '' },
+            { label: 'En Sanlúcar', weight: 50, reps: '3x12', note: '' }
+          ]
+        },
+        {
+          name: 'Hack (Haka)',
+          weight: '',
+          reps: '2x15',
+          notes: 'Calentar con 2 series antes.',
+          variants: []
+        },
+        {
+          name: 'Extensión de cuádriceps',
+          weight: 93,
+          reps: '11/9/7 + 1 serie al fallo (4 series en total)',
+          notes: '',
+          variants: [
+            { label: 'En Sanlúcar (unilateral)', weight: '', reps: '14/13/12 + fallo y descarga controlando bien (3 series en total)', note: 'Peso sin especificar.' }
+          ]
+        },
+        {
+          name: 'Gemelos',
+          weight: 75,
+          reps: '12/10/10',
+          notes: 'En progresión desde 50 kg 3x14, subir a 55 kg.',
+          variants: []
+        },
+        {
+          name: 'Abs crunch',
+          weight: 25,
+          reps: '3x12',
+          notes: '',
+          variants: []
+        },
+        {
+          name: 'Colgado',
+          weight: '',
+          reps: '2x10',
+          notes: '',
+          variants: []
+        },
+        {
+          name: 'Colgado lateral',
+          weight: '',
+          reps: '2x9',
+          notes: '',
+          variants: []
+        }
+      ]
+    },
+    {
+      name: 'Pecho y espalda',
+      notes: '',
+      exercises: [
+        {
+          name: 'Press inclinado con mancuerna',
+          weight: 28,
+          reps: '10/9/8',
+          notes: '',
+          variants: []
+        },
+        {
+          name: 'Jalón unilateral',
+          weight: 27.3,
+          reps: '12/11/10',
+          notes: '',
+          variants: [
+            { label: 'En Sanlúcar', weight: 25, reps: '3x12', note: '' }
+          ]
+        },
+        {
+          name: 'Remo en barra (muy controlado)',
+          weight: 52,
+          reps: '3x12',
+          notes: '',
+          variants: [
+            { label: 'En Sanlúcar', weight: 64, reps: '10/9/8', note: '' }
+          ]
+        },
+        {
+          name: 'Aperturas sin agarrar (apoyo en el principio de la mano), brazos estirados',
+          weight: 73,
+          reps: '12/11/10',
+          notes: 'Bajada lenta y subida explosiva, al dos. Asiento en posición 4 por fuera.',
+          variants: [
+            { label: 'En Sanlúcar', weight: 59, reps: '12/10/8', note: '' }
+          ]
+        },
+        {
+          name: 'Remo unilateral',
+          weight: 32,
+          reps: '2x10',
+          notes: '',
+          variants: [
+            { label: 'En Sanlúcar', weight: 30, reps: '2x12', note: '' }
+          ]
+        },
+        {
+          name: 'Fondos lastrados',
+          weight: 6,
+          reps: '12/12',
+          notes: 'Subir a 8 kg.',
+          variants: []
+        }
+      ]
+    },
+    {
+      name: 'Hombro',
+      notes: '',
+      exercises: [
+        {
+          name: 'Press militar en multipower',
+          weight: 20,
+          reps: '8/8/7 + descarga',
+          notes: 'Peso por lado.',
+          variants: [
+            { label: 'Alternativa con mancuerna', weight: 24, reps: '10/8/7 + descarga con mancuerna de 14 kg', note: '' }
+          ]
+        },
+        {
+          name: 'Lateral con mancuernas (sentado)',
+          weight: 9,
+          reps: '3x12',
+          notes: 'Mantener e ir a por más resistencia.',
+          variants: []
+        },
+        {
+          name: 'Posterior en polea (unilateral)',
+          weight: 4.5,
+          reps: '4x12',
+          notes: '',
+          variants: []
+        },
+        {
+          name: 'Lateral unilateral en polea',
+          weight: 3.5,
+          reps: '3x13',
+          notes: 'Controla mucho la fase negativa, buena ejecución.',
+          variants: []
+        },
+        {
+          name: 'Encogimiento (trapecio)',
+          weight: 31.5,
+          reps: '3x13',
+          notes: '',
+          variants: []
+        },
+        {
+          name: 'Abs',
+          weight: 27.3,
+          reps: '4x12',
+          notes: '',
+          variants: []
+        }
+      ]
+    }
+  ];
+
+  function makeDefaultRoutines() {
+    return DEFAULT_ROUTINE_NAMES.map(name => ({
+      id: uid(),
+      name,
+      exercises: [],
+      lastDone: null,
+      notes: ''
+    }));
+  }
+
+  function loadRoutines() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw === null) {
+        // Primera vez que se abre la app: sembramos las rutinas por defecto.
+        const defaults = makeDefaultRoutines();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(defaults));
+        return defaults;
+      }
+      return JSON.parse(raw);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveRoutines() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(routines));
+  }
+
+  function todayStr() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  function getWeekStart() {
+    const d = new Date();
+    const day = d.getDay();
+    const diffToMonday = day === 0 ? 6 : day - 1;
+    const monday = new Date(d);
+    monday.setDate(d.getDate() - diffToMonday);
+    monday.setHours(0, 0, 0, 0);
+    return monday;
+  }
+
+  function isDoneThisWeek(routine) {
+    if (!routine.lastDone) return false;
+    const doneDate = new Date(routine.lastDone + 'T00:00:00');
+    return doneDate >= getWeekStart();
+  }
+
+  let routines = loadRoutines();
+  let openRoutineId = null;
+
+  const container = document.getElementById('routines-container');
+
+  function formatWeightReps(weight, reps) {
+    const parts = [];
+    if (weight !== '' && weight !== null && weight !== undefined) parts.push(`${weight} kg`);
+    if (reps) parts.push(reps);
+    return parts.join(' · ');
+  }
+
+  function updateProgress() {
+    const total = routines.length;
+    const done = routines.filter(isDoneThisWeek).length;
+    const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+    document.getElementById('progress-text').innerHTML =
+      total === 0
+        ? 'Crea tu primera rutina para empezar'
+        : `<b>${done} de ${total}</b> rutinas completadas esta semana`;
+    document.getElementById('progress-fill').style.width = pct + '%';
+  }
+
+  function render() {
+    updateProgress();
+    container.innerHTML = '';
+
+    if (routines.length === 0) {
+      container.innerHTML = '<div class="empty-state">Aún no tienes rutinas.<br>Pulsa el botón + para crear la primera.</div>';
+      return;
+    }
+
+    routines.forEach(routine => {
+      const isOpen = routine.id === openRoutineId;
+      const doneToday = routine.lastDone === todayStr();
+
+      const card = document.createElement('div');
+      card.className = 'routine-card' + (isOpen ? ' open' : '') + (doneToday ? ' done-today' : '');
+
+      const head = document.createElement('div');
+      head.className = 'routine-head';
+      head.innerHTML = `
+        <div class="routine-head-left">
+          <span class="routine-icon">${pickIcon(routine.name)}</span>
+          <div class="routine-name-wrap">
+            <span class="routine-name">${escapeHtml(routine.name)}</span>
+            ${doneToday ? '<span class="badge-done">Hecho hoy</span>' : ''}
+          </div>
+        </div>
+        <svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      `;
+      head.addEventListener('click', () => {
+        openRoutineId = isOpen ? null : routine.id;
+        render();
+      });
+
+      const body = document.createElement('div');
+      body.className = 'routine-body';
+
+      const notesWrap = document.createElement('div');
+      notesWrap.className = 'routine-notes-wrap';
+      notesWrap.innerHTML = `<textarea class="routine-notes" placeholder="Notas de la rutina (opcional, ej. orden a alternar)" rows="2">${escapeHtml(routine.notes || '')}</textarea>`;
+      notesWrap.querySelector('.routine-notes').addEventListener('change', (e) => {
+        routine.notes = e.target.value.trim();
+        saveRoutines();
+      });
+
+      const exList = document.createElement('div');
+      if (routine.exercises.length === 0) {
+        exList.innerHTML = '<p style="color:var(--text-dim);font-size:0.85rem;">Sin ejercicios todavía.</p>';
+      }
+      routine.exercises.forEach(ex => {
+        const row = document.createElement('div');
+        row.className = 'exercise-row';
+
+        const chipsHtml = `
+          ${(ex.weight !== '' && ex.weight !== null && ex.weight !== undefined) ? `<span class="chip chip-weight">${escapeHtml(ex.weight + ' kg')}</span>` : ''}
+          ${ex.reps ? `<span class="chip chip-reps">${escapeHtml(ex.reps)}</span>` : ''}
+        `;
+        const hasChips = (ex.weight !== '' && ex.weight !== null && ex.weight !== undefined) || ex.reps;
+
+        const variantsHtml = (ex.variants || []).map(v => {
+          const vMeta = formatWeightReps(v.weight, v.reps);
+          return `
+            <div class="exercise-variant">
+              <b>${escapeHtml(v.label || 'Variante')}</b>${vMeta ? ': ' + escapeHtml(vMeta) : ''}
+              ${v.note ? `<span class="variant-note">${escapeHtml(v.note)}</span>` : ''}
+            </div>
+          `;
+        }).join('');
+
+        row.innerHTML = `
+          <div class="exercise-info">
+            <div class="exercise-name">${escapeHtml(ex.name)}</div>
+            ${hasChips ? `<div class="exercise-chips">${chipsHtml}</div>` : ''}
+            ${ex.notes ? `<div class="exercise-notes">📝 ${escapeHtml(ex.notes)}</div>` : ''}
+            ${variantsHtml}
+          </div>
+          <div class="exercise-actions">
+            <button class="icon-btn btn-edit" title="Editar ejercicio">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
+              </svg>
+            </button>
+            <button class="icon-btn btn-delete" title="Eliminar ejercicio">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                <path d="M10 11v6"></path>
+                <path d="M14 11v6"></path>
+                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+              </svg>
+            </button>
+          </div>
+        `;
+        row.querySelector('.btn-edit').addEventListener('click', () => {
+          openExerciseEditor(routine, ex);
+        });
+        row.querySelector('.btn-delete').addEventListener('click', () => {
+          routine.exercises = routine.exercises.filter(e => e.id !== ex.id);
+          saveRoutines();
+          render();
+        });
+        exList.appendChild(row);
+      });
+
+      const form = document.createElement('div');
+      form.className = 'add-exercise-form';
+      form.innerHTML = `
+        <input type="text" class="ex-name" placeholder="Nombre del ejercicio" maxlength="60">
+        <input type="number" class="ex-weight" placeholder="Peso (kg)" min="0" max="999" step="0.5">
+        <input type="text" class="ex-reps" placeholder="Series/reps (ej. 3x12 o 9/8/7)" maxlength="60">
+        <input type="text" class="ex-notes" placeholder="Notas (opcional)" maxlength="200">
+        <button class="btn-primary add-ex-btn">Añadir ejercicio</button>
+      `;
+
+      const addExBtn = form.querySelector('.add-ex-btn');
+      addExBtn.addEventListener('click', () => {
+        const nameInput = form.querySelector('.ex-name');
+        const weightInput = form.querySelector('.ex-weight');
+        const repsInput = form.querySelector('.ex-reps');
+        const notesInput = form.querySelector('.ex-notes');
+
+        const name = nameInput.value.trim();
+        const weight = weightInput.value;
+        const reps = repsInput.value.trim();
+        const notes = notesInput.value.trim();
+
+        if (!name || weight === '' || !reps) {
+          alert('Rellena al menos nombre, peso y series/reps.');
+          return;
+        }
+
+        routine.exercises.push({
+          id: uid(),
+          name,
+          weight: Number(weight),
+          reps,
+          notes,
+          variants: []
+        });
+        saveRoutines();
+        render();
+      });
+
+      const actions = document.createElement('div');
+      actions.className = 'row-actions';
+      actions.innerHTML = `
+        <button class="btn-done ${doneToday ? 'active' : ''}">${doneToday ? '✓ Hecho hoy' : 'Marcar hecho hoy'}</button>
+        <button class="btn-outline delete-routine-btn">Eliminar rutina</button>
+      `;
+
+      actions.querySelector('.btn-done').addEventListener('click', () => {
+        routine.lastDone = doneToday ? null : todayStr();
+        saveRoutines();
+        render();
+      });
+
+      actions.querySelector('.delete-routine-btn').addEventListener('click', () => {
+        if (confirm(`¿Eliminar la rutina "${routine.name}"? Esta acción no se puede deshacer.`)) {
+          routines = routines.filter(r => r.id !== routine.id);
+          if (openRoutineId === routine.id) openRoutineId = null;
+          saveRoutines();
+          render();
+        }
+      });
+
+      body.appendChild(notesWrap);
+      body.appendChild(exList);
+      body.appendChild(form);
+      body.appendChild(actions);
+
+      card.appendChild(head);
+      card.appendChild(body);
+      container.appendChild(card);
+    });
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str == null ? '' : String(str);
+    return div.innerHTML;
+  }
+
+  function escapeAttr(str) {
+    return (str == null ? '' : String(str))
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  // New routine modal
+  const modalOverlay = document.getElementById('modal-overlay');
+  const newRoutineInput = document.getElementById('new-routine-name');
+
+  document.getElementById('fab-add').addEventListener('click', () => {
+    newRoutineInput.value = '';
+    modalOverlay.classList.add('show');
+    setTimeout(() => newRoutineInput.focus(), 50);
+  });
+
+  document.getElementById('cancel-routine').addEventListener('click', () => {
+    modalOverlay.classList.remove('show');
+  });
+
+  modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) modalOverlay.classList.remove('show');
+  });
+
+  function createRoutine() {
+    const name = newRoutineInput.value.trim();
+    if (!name) {
+      alert('Ponle un nombre a la rutina.');
+      return;
+    }
+    const routine = {
+      id: uid(),
+      name,
+      exercises: [],
+      lastDone: null,
+      notes: ''
+    };
+    routines.push(routine);
+    openRoutineId = routine.id;
+    saveRoutines();
+    modalOverlay.classList.remove('show');
+    render();
+  }
+
+  document.getElementById('confirm-routine').addEventListener('click', createRoutine);
+  newRoutineInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') createRoutine();
+  });
+
+  document.getElementById('restore-defaults').addEventListener('click', () => {
+    const existingNames = routines.map(r => r.name);
+    const missing = DEFAULT_ROUTINE_NAMES.filter(name => !existingNames.includes(name));
+
+    if (missing.length === 0) {
+      alert('Ya tienes los 5 días por defecto creados.');
+      return;
+    }
+
+    missing.forEach(name => {
+      routines.push({ id: uid(), name, exercises: [], lastDone: null, notes: '' });
+    });
+    saveRoutines();
+    render();
+  });
+
+  document.getElementById('load-sample-data').addEventListener('click', () => {
+    const ok = confirm(
+      'Esto crea (o actualiza) las rutinas "Pecho y tríceps", "Espalda y bíceps", "Pierna", "Pecho y espalda" y "Hombro" ' +
+      'con los ejercicios, pesos, notas y variantes que me diste. ' +
+      'Si ya tienes un ejercicio con el mismo nombre en esas rutinas, se sobrescribirá con estos datos. ¿Continuar?'
+    );
+    if (!ok) return;
+
+    SAMPLE_ROUTINES_DATA.forEach(sample => {
+      let routine = routines.find(r => r.name === sample.name);
+      if (!routine) {
+        routine = { id: uid(), name: sample.name, exercises: [], lastDone: null, notes: '' };
+        routines.push(routine);
+      }
+      if (sample.notes) routine.notes = sample.notes;
+      sample.exercises.forEach(sampleEx => {
+        const idx = routine.exercises.findIndex(e => e.name === sampleEx.name);
+        const exObj = {
+          id: idx >= 0 ? routine.exercises[idx].id : uid(),
+          name: sampleEx.name,
+          weight: sampleEx.weight,
+          reps: sampleEx.reps,
+          notes: sampleEx.notes,
+          variants: sampleEx.variants.map(v => ({
+            id: uid(),
+            label: v.label,
+            weight: v.weight,
+            reps: v.reps,
+            note: v.note
+          }))
+        };
+        if (idx >= 0) routine.exercises[idx] = exObj;
+        else routine.exercises.push(exObj);
+      });
+    });
+
+    saveRoutines();
+    const firstLoaded = routines.find(r => r.name === SAMPLE_ROUTINES_DATA[0].name);
+    if (firstLoaded) openRoutineId = firstLoaded.id;
+    render();
+  });
+
+  // Exercise edit modal
+  const exerciseModalOverlay = document.getElementById('exercise-modal-overlay');
+  const variantsList = document.getElementById('variants-list');
+  let editingRoutineId = null;
+  let editingExerciseId = null;
+  let editingVariants = [];
+
+  function openExerciseEditor(routine, exercise) {
+    editingRoutineId = routine.id;
+    editingExerciseId = exercise.id;
+    document.getElementById('edit-ex-name').value = exercise.name || '';
+    document.getElementById('edit-ex-weight').value = (exercise.weight === '' || exercise.weight == null) ? '' : exercise.weight;
+    document.getElementById('edit-ex-reps').value = exercise.reps || '';
+    document.getElementById('edit-ex-notes').value = exercise.notes || '';
+    editingVariants = (exercise.variants || []).map(v => ({ ...v }));
+    renderVariantsEditor();
+    exerciseModalOverlay.classList.add('show');
+  }
+
+  function renderVariantsEditor() {
+    variantsList.innerHTML = '';
+
+    if (editingVariants.length === 0) {
+      const msg = document.createElement('p');
+      msg.className = 'no-variants-msg';
+      msg.textContent = 'Sin variantes. Añade una si haces este ejercicio en otro gimnasio o con otra máquina/agarre.';
+      variantsList.appendChild(msg);
+    }
+
+    editingVariants.forEach((v, idx) => {
+      const row = document.createElement('div');
+      row.className = 'variant-row';
+      row.innerHTML = `
+        <div class="variant-row-top">
+          <input type="text" class="v-label" placeholder="Ej. En Sanlúcar" maxlength="40" value="${escapeAttr(v.label)}">
+          <button class="icon-btn btn-delete" title="Eliminar variante">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="variant-fields">
+          <input type="number" class="v-weight" placeholder="Peso (kg)" step="0.5" value="${(v.weight === '' || v.weight == null) ? '' : v.weight}">
+          <input type="text" class="v-reps" placeholder="Series/reps" maxlength="60" value="${escapeAttr(v.reps)}">
+        </div>
+        <input type="text" class="v-note" placeholder="Nota de la variante (opcional)" maxlength="200" value="${escapeAttr(v.note || '')}">
+      `;
+      row.querySelector('.v-label').addEventListener('input', e => { editingVariants[idx].label = e.target.value; });
+      row.querySelector('.v-weight').addEventListener('input', e => { editingVariants[idx].weight = e.target.value; });
+      row.querySelector('.v-reps').addEventListener('input', e => { editingVariants[idx].reps = e.target.value; });
+      row.querySelector('.v-note').addEventListener('input', e => { editingVariants[idx].note = e.target.value; });
+      row.querySelector('.btn-delete').addEventListener('click', () => {
+        editingVariants.splice(idx, 1);
+        renderVariantsEditor();
+      });
+      variantsList.appendChild(row);
+    });
+  }
+
+  document.getElementById('add-variant-btn').addEventListener('click', () => {
+    editingVariants.push({ id: uid(), label: '', weight: '', reps: '', note: '' });
+    renderVariantsEditor();
+  });
+
+  document.getElementById('cancel-exercise-edit').addEventListener('click', () => {
+    exerciseModalOverlay.classList.remove('show');
+  });
+
+  exerciseModalOverlay.addEventListener('click', (e) => {
+    if (e.target === exerciseModalOverlay) exerciseModalOverlay.classList.remove('show');
+  });
+
+  document.getElementById('save-exercise-edit').addEventListener('click', () => {
+    const routine = routines.find(r => r.id === editingRoutineId);
+    if (!routine) return;
+    const idx = routine.exercises.findIndex(e => e.id === editingExerciseId);
+    if (idx === -1) return;
+
+    const name = document.getElementById('edit-ex-name').value.trim();
+    if (!name) {
+      alert('El ejercicio necesita un nombre.');
+      return;
+    }
+    const weightRaw = document.getElementById('edit-ex-weight').value;
+    const reps = document.getElementById('edit-ex-reps').value.trim();
+    const notes = document.getElementById('edit-ex-notes').value.trim();
+
+    const variants = editingVariants
+      .map(v => ({
+        id: v.id || uid(),
+        label: (v.label || '').trim(),
+        weight: (v.weight === '' || v.weight == null) ? '' : Number(v.weight),
+        reps: (v.reps || '').trim(),
+        note: (v.note || '').trim()
+      }))
+      .filter(v => v.label || v.reps || v.weight !== '');
+
+    routine.exercises[idx] = {
+      id: editingExerciseId,
+      name,
+      weight: weightRaw === '' ? '' : Number(weightRaw),
+      reps,
+      notes,
+      variants
+    };
+
+    saveRoutines();
+    exerciseModalOverlay.classList.remove('show');
+    render();
+  });
+
+  render();
+</script>
+
+</body>
+</html>
