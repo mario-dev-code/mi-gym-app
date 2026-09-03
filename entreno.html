@@ -790,6 +790,17 @@
 
   .btn-neutral:hover { border-color: var(--accent); color: var(--text); }
 
+  .btn-danger {
+    background: linear-gradient(135deg, var(--danger), #c62828);
+    color: #2a0000;
+    box-shadow: 0 4px 16px rgba(255, 70, 70, 0.28);
+  }
+
+  .btn-danger:hover {
+    background: linear-gradient(135deg, #ff6b6b, var(--danger));
+    box-shadow: 0 6px 20px rgba(255, 70, 70, 0.42);
+  }
+
   .btn-small { padding: 6px 11px; font-size: 0.7rem; }
 
   .btn-done {
@@ -1440,6 +1451,7 @@
     <div class="row-actions" style="margin-top:16px">
       <button class="btn-neutral" id="restore-defaults">🗓️ Split clásico (5 días)</button>
       <button class="btn-neutral" id="create-custom-split">🎯 Crear mi split</button>
+      <button class="btn-outline" id="delete-split">🗑️ Borrar split</button>
     </div>
 
     <div class="panel" style="margin-top:16px">
@@ -1628,6 +1640,20 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="delete-split-modal-overlay">
+  <div class="modal">
+    <h2>¿Borrar todo tu split?</h2>
+    <p class="nut-note" style="margin:0 0 12px">
+      Esto elimina <b id="delete-split-count">todas</b> tus rutinas, con sus ejercicios, pesos y notas.
+      No se puede deshacer. Si quieres conservarlos, exporta antes una copia de seguridad.
+    </p>
+    <div class="row-actions">
+      <button class="btn-outline" id="cancel-delete-split">Cancelar</button>
+      <button class="btn-danger" id="confirm-delete-split">Borrar todo</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="exercise-modal-overlay">
   <div class="modal">
     <h2>Editar ejercicio</h2>
@@ -1670,6 +1696,10 @@
     { n: 'Fondos en paralelas', g: 'Pecho', reps: '3x8-12', tip: 'Inclina el torso hacia delante para enfatizar el pecho sobre el tríceps.' },
     { n: 'Cruce de poleas', g: 'Pecho', reps: '3x12-15', tip: 'Junta las manos delante del cuerpo y aprieta el pecho al final del recorrido.' },
     { n: 'Press en máquina / Smith', g: 'Pecho', reps: '3x10-12', tip: 'Buena opción para rematar el ejercicio sin necesitar ayuda de un compañero.' },
+    { n: 'Press declinado con barra', g: 'Pecho', reps: '3x8-10', tip: 'Banco en declive; enfatiza la parte baja del pecho, baja hasta rozarlo.' },
+    { n: 'Pullover con mancuerna', g: 'Pecho', reps: '3x12-15', tip: 'Baja el brazo detrás de la cabeza sin arquear demasiado la espalda.' },
+    { n: 'Flexiones (push-ups)', g: 'Pecho', reps: '3x hasta el fallo', tip: 'Cuerpo recto de cabeza a talones, baja el pecho casi hasta el suelo.' },
+    { n: 'Press con banda elástica', g: 'Pecho', reps: '3x15-20', tip: 'Controla también la vuelta; la banda pierde tensión al final si no frenas.' },
 
     { n: 'Dominadas', g: 'Espalda', reps: '4x6-10', tip: 'Tira con los codos hacia abajo y atrás, no solo con los brazos.' },
     { n: 'Remo con barra', g: 'Espalda', reps: '4x8-10', tip: 'Espalda recta, tira hacia el abdomen apretando los omóplatos.' },
@@ -1677,6 +1707,9 @@
     { n: 'Jalón al pecho', g: 'Espalda', reps: '4x10-12', tip: 'Baja la barra hacia la parte alta del pecho, sin balancear el torso.' },
     { n: 'Remo en polea baja', g: 'Espalda', reps: '3x10-12', tip: 'Mantén la espalda estable; el movimiento lo hacen los brazos y los omóplatos.' },
     { n: 'Peso muerto', g: 'Espalda', reps: '3x5-8', tip: 'Espalda siempre recta; empuja el suelo con los pies al subir la barra.' },
+    { n: 'Remo en máquina (T-bar)', g: 'Espalda', reps: '3x10-12', tip: 'Pecho apoyado si la máquina lo permite; tira juntando los omóplatos.' },
+    { n: 'Remo invertido', g: 'Espalda', reps: '3x10-15', tip: 'Cuerpo recto colgado de una barra baja; tira del pecho hacia la barra.' },
+    { n: 'Hiperextensiones', g: 'Espalda', reps: '3x12-15', tip: 'Sube solo hasta alinear el cuerpo, no arquees de más al llegar arriba.' },
 
     { n: 'Sentadilla con barra', g: 'Pierna', reps: '4x6-10', tip: 'Rodillas en línea con los pies; baja hasta que el muslo pase de paralelo si puedes.' },
     { n: 'Prensa de piernas', g: 'Pierna', reps: '4x10-12', tip: 'No bloquees del todo las rodillas arriba ni despegues la zona lumbar del respaldo.' },
@@ -1685,33 +1718,49 @@
     { n: 'Extensión de cuádriceps', g: 'Pierna', reps: '3x12-15', tip: 'Controla la bajada, no dejes caer el peso de golpe.' },
     { n: 'Curl femoral', g: 'Pierna', reps: '3x12-15', tip: 'Aprieta al final del recorrido y evita levantar la cadera del banco.' },
     { n: 'Elevación de talones (gemelo)', g: 'Pierna', reps: '4x15-20', tip: 'Sube todo lo posible y baja hasta notar el estiramiento del gemelo.' },
+    { n: 'Sentadilla búlgara', g: 'Pierna', reps: '3x10-12 por pierna', tip: 'Pie trasero apoyado en un banco; baja recto, sin que la rodilla se vaya hacia dentro.' },
+    { n: 'Sentadilla goblet', g: 'Pierna', reps: '3x12-15', tip: 'Sujeta la mancuerna o kettlebell pegada al pecho; baja manteniendo el torso vertical.' },
+    { n: 'Step-up (subida al cajón)', g: 'Pierna', reps: '3x10-12 por pierna', tip: 'Empuja con el talón de la pierna que sube, evita impulsarte con la de abajo.' },
+    { n: 'Abductores en máquina', g: 'Pierna', reps: '3x15-20', tip: 'Movimiento controlado hacia fuera, sin balancear el tronco.' },
 
     { n: 'Press militar', g: 'Hombro', reps: '4x8-10', tip: 'No arquees la zona lumbar; aprieta el core al empujar la barra sobre la cabeza.' },
     { n: 'Elevaciones laterales', g: 'Hombro', reps: '3x12-15', tip: 'Codos ligeramente flexionados, sube hasta la altura del hombro y no más.' },
     { n: 'Elevaciones frontales', g: 'Hombro', reps: '3x12-15', tip: 'Sube el peso sin impulso, controlando también la bajada.' },
     { n: 'Pájaros (deltoide posterior)', g: 'Hombro', reps: '3x12-15', tip: 'Inclina el torso adelante y separa los brazos como si abrieras alas.' },
     { n: 'Press Arnold', g: 'Hombro', reps: '3x10-12', tip: 'Gira las muñecas al subir; trabaja todo el deltoides en un solo movimiento.' },
+    { n: 'Encogimientos (shrugs)', g: 'Hombro', reps: '3x12-15', tip: 'Sube los hombros hacia las orejas sin ayudarte de los brazos, aguanta arriba un segundo.' },
+    { n: 'Face pull', g: 'Hombro', reps: '3x15-20', tip: 'Tira de la cuerda hacia la cara separando bien los codos; fortalece el hombro y la postura.' },
+    { n: 'Press de hombro en máquina', g: 'Hombro', reps: '3x10-12', tip: 'Buena opción para ir seguro cerca del fallo, sin preocuparte del equilibrio.' },
 
     { n: 'Curl con barra', g: 'Bíceps', reps: '3x8-10', tip: 'Codos pegados al cuerpo, evita balancear la espalda para ayudarte.' },
     { n: 'Curl con mancuernas alterno', g: 'Bíceps', reps: '3x10-12', tip: 'Gira la muñeca hacia fuera al subir para contraer mejor el bíceps.' },
     { n: 'Curl martillo', g: 'Bíceps', reps: '3x10-12', tip: 'Agarre neutro (palmas encaradas); también trabaja el antebrazo.' },
     { n: 'Curl en polea', g: 'Bíceps', reps: '3x12-15', tip: 'Mantiene tensión constante en el bíceps durante todo el recorrido.' },
+    { n: 'Curl concentrado', g: 'Bíceps', reps: '3x12-15', tip: 'Codo apoyado en el muslo, aísla el bíceps sin balanceos.' },
+    { n: 'Curl en banco Scott', g: 'Bíceps', reps: '3x10-12', tip: 'El banco fija el codo; evita extender del todo arriba de golpe para no forzar.' },
 
     { n: 'Press francés', g: 'Tríceps', reps: '3x10-12', tip: 'Solo mueve el antebrazo; codos fijos apuntando al techo.' },
     { n: 'Extensión de tríceps en polea', g: 'Tríceps', reps: '3x12-15', tip: 'Codos pegados al cuerpo, extiende del todo apretando el tríceps.' },
     { n: 'Fondos en banco', g: 'Tríceps', reps: '3x10-15', tip: 'No bajes demasiado para cuidar el hombro; codos hacia atrás, no hacia fuera.' },
     { n: 'Patada de tríceps', g: 'Tríceps', reps: '3x12-15', tip: 'Torso inclinado y brazo pegado al cuerpo; extiende solo el antebrazo.' },
+    { n: 'Press cerrado en banca', g: 'Tríceps', reps: '3x8-10', tip: 'Agarre estrecho (más o menos al ancho de los hombros), codos pegados al bajar.' },
+    { n: 'Extensión sobre la cabeza con mancuerna', g: 'Tríceps', reps: '3x10-12', tip: 'Un solo brazo o los dos a la vez; codos apuntando al techo durante todo el recorrido.' },
 
     { n: 'Plancha', g: 'Core', reps: '3x30-60 seg', tip: 'Cuerpo en línea recta, aprieta abdomen y glúteo; no dejes caer la cadera.' },
     { n: 'Crunch abdominal', g: 'Core', reps: '3x15-20', tip: 'Sube solo con el abdomen, sin tirar del cuello con las manos.' },
     { n: 'Elevación de piernas colgado', g: 'Core', reps: '3x10-15', tip: 'Evita balancearte; sube las piernas controlando con el abdomen.' },
     { n: 'Rueda abdominal', g: 'Core', reps: '3x8-12', tip: 'Extiende solo hasta donde controles, sin arquear la zona lumbar.' },
     { n: 'Giro ruso', g: 'Core', reps: '3x16-20', tip: 'Pies un poco elevados si puedes; gira desde el torso, no solo con los brazos.' },
+    { n: 'Plancha lateral', g: 'Core', reps: '3x20-40 seg por lado', tip: 'Cadera arriba en línea con el cuerpo, no dejes que se hunda.' },
+    { n: 'Mountain climbers', g: 'Core', reps: '3x30-40 seg', tip: 'Mantén la cadera baja y estable; no la subas al llevar la rodilla al pecho.' },
+    { n: 'Dead bug', g: 'Core', reps: '3x10-12 por lado', tip: 'Zona lumbar pegada al suelo todo el rato; baja brazo y pierna contrarios muy despacio.' },
 
     { n: 'Hip thrust', g: 'Glúteo', reps: '4x8-12', tip: 'Barra sobre la cadera; sube apretando fuerte el glúteo arriba del todo.' },
     { n: 'Peso muerto sumo', g: 'Glúteo', reps: '3x6-10', tip: 'Piernas más abiertas que en el peso muerto normal, puntas ligeramente hacia fuera.' },
     { n: 'Patada de glúteo en polea', g: 'Glúteo', reps: '3x12-15', tip: 'Empuja el talón hacia atrás y arriba, sin arquear la espalda.' },
-    { n: 'Puente de glúteo', g: 'Glúteo', reps: '3x15-20', tip: 'Aprieta el glúteo un segundo arriba antes de bajar.' }
+    { n: 'Puente de glúteo', g: 'Glúteo', reps: '3x15-20', tip: 'Aprieta el glúteo un segundo arriba antes de bajar.' },
+    { n: 'Patada de glúteo en máquina', g: 'Glúteo', reps: '3x12-15', tip: 'Empuja con el talón hacia atrás, controla la vuelta sin dejar caer el peso.' },
+    { n: 'Abducción de cadera en máquina', g: 'Glúteo', reps: '3x15-20', tip: 'Espalda pegada al respaldo; abre las piernas contra la resistencia sin impulso.' }
   ];
 
   let activeMuscleGroup = 'Todos';
@@ -2477,6 +2526,40 @@
     customSplitModal.classList.remove('show');
     render();
     toast('Creadas ' + toCreate.length + ' rutina(s).', 'ok');
+  });
+
+  /* ===================================================================
+     3.6) MODAL: borrar todo el split
+     =================================================================== */
+  const deleteSplitModal = document.getElementById('delete-split-modal-overlay');
+  const deleteSplitCount = document.getElementById('delete-split-count');
+
+  document.getElementById('delete-split').addEventListener('click', () => {
+    if (routines.length === 0) {
+      toast('No tienes rutinas que borrar.');
+      return;
+    }
+    deleteSplitCount.textContent = routines.length === 1 ? 'tu única rutina' : 'las ' + routines.length + ' rutinas';
+    deleteSplitModal.classList.add('show');
+  });
+
+  document.getElementById('cancel-delete-split').addEventListener('click', () => {
+    deleteSplitModal.classList.remove('show');
+  });
+
+  deleteSplitModal.addEventListener('click', (e) => {
+    if (e.target === deleteSplitModal) deleteSplitModal.classList.remove('show');
+  });
+
+  document.getElementById('confirm-delete-split').addEventListener('click', () => {
+    const count = routines.length;
+    routines = [];
+    openRoutineId = null;
+    saveRoutines();
+    deleteSplitModal.classList.remove('show');
+    render();
+    renderExerciseLibrary();
+    toast('Borradas ' + count + ' rutina(s).');
   });
 
   /* ===================================================================
