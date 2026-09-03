@@ -2182,8 +2182,10 @@
   function saveRoutines() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(routines));
+      return true;
     } catch (e) {
-      toast('No se pudieron guardar los cambios.', 'err');
+      toast('No se pudo guardar (memoria llena o modo privado del navegador).', 'err');
+      return false;
     }
   }
 
@@ -2344,8 +2346,9 @@
         row.querySelector('.btn-edit').addEventListener('click', () => openExerciseEditor(routine, ex));
         row.querySelector('.btn-delete').addEventListener('click', () => {
           if (!confirm('¿Eliminar "' + ex.name + '"?')) return;
+          const backup = routine.exercises;
           routine.exercises = routine.exercises.filter(e => e.id !== ex.id);
-          saveRoutines();
+          if (!saveRoutines()) { routine.exercises = backup; return; }
           render();
           toast('Ejercicio eliminado.');
         });
@@ -2380,7 +2383,7 @@
           notes,
           variants: []
         });
-        saveRoutines();
+        if (!saveRoutines()) { routine.exercises.pop(); return; }
         render();
         toast('Ejercicio añadido.', 'ok');
       });
@@ -2394,17 +2397,20 @@
         '<button class="btn-outline delete-routine-btn">Eliminar rutina</button>';
 
       actions.querySelector('.btn-done').addEventListener('click', () => {
+        const prevDone = routine.lastDone;
         routine.lastDone = doneToday ? null : todayStr();
-        saveRoutines();
+        if (!saveRoutines()) { routine.lastDone = prevDone; return; }
         render();
         if (!doneToday) toast('¡Rutina marcada como hecha! 💪', 'ok');
       });
 
       actions.querySelector('.delete-routine-btn').addEventListener('click', () => {
         if (confirm('¿Eliminar la rutina "' + routine.name + '"? Esta acción no se puede deshacer.')) {
+          const backup = routines;
+          const prevOpenId = openRoutineId;
           routines = routines.filter(r => r.id !== routine.id);
           if (openRoutineId === routine.id) openRoutineId = null;
-          saveRoutines();
+          if (!saveRoutines()) { routines = backup; openRoutineId = prevOpenId; return; }
           render();
           toast('Rutina eliminada.');
         }
@@ -2450,7 +2456,7 @@
     const routine = { id: uid(), name, exercises: [], lastDone: null, notes: '' };
     routines.push(routine);
     openRoutineId = routine.id;
-    saveRoutines();
+    if (!saveRoutines()) { routines.pop(); openRoutineId = null; return; }
     modalOverlay.classList.remove('show');
     render();
     toast('Rutina creada.', 'ok');
@@ -2472,7 +2478,7 @@
     missing.forEach(name => {
       routines.push({ id: uid(), name, exercises: [], lastDone: null, notes: '' });
     });
-    saveRoutines();
+    if (!saveRoutines()) { routines = routines.slice(0, routines.length - missing.length); return; }
     render();
     toast('Añadidas ' + missing.length + ' rutina(s).', 'ok');
   });
@@ -2522,7 +2528,7 @@
     toCreate.forEach(name => {
       routines.push({ id: uid(), name, exercises: [], lastDone: null, notes: '' });
     });
-    saveRoutines();
+    if (!saveRoutines()) { routines = routines.slice(0, routines.length - toCreate.length); return; }
     customSplitModal.classList.remove('show');
     render();
     toast('Creadas ' + toCreate.length + ' rutina(s).', 'ok');
@@ -2553,9 +2559,11 @@
 
   document.getElementById('confirm-delete-split').addEventListener('click', () => {
     const count = routines.length;
+    const backup = routines;
+    const prevOpenId = openRoutineId;
     routines = [];
     openRoutineId = null;
-    saveRoutines();
+    if (!saveRoutines()) { routines = backup; openRoutineId = prevOpenId; return; }
     deleteSplitModal.classList.remove('show');
     render();
     renderExerciseLibrary();
@@ -2663,6 +2671,7 @@
       }))
       .filter(v => v.label || v.reps || v.weight !== '');
 
+    const backup = routine.exercises[idx];
     routine.exercises[idx] = {
       id: editingExerciseId,
       name,
@@ -2672,7 +2681,7 @@
       variants
     };
 
-    saveRoutines();
+    if (!saveRoutines()) { routine.exercises[idx] = backup; return; }
     exerciseModalOverlay.classList.remove('show');
     render();
     toast('Ejercicio guardado.', 'ok');
@@ -2881,8 +2890,10 @@
     nutri.date = todayStr();
     try {
       localStorage.setItem(NUTRI_KEY, JSON.stringify(nutri));
+      return true;
     } catch (e) {
-      toast('No se pudo guardar la comida.', 'err');
+      toast('No se pudo guardar (memoria llena o modo privado del navegador).', 'err');
+      return false;
     }
   }
 
@@ -3009,7 +3020,7 @@
       k: food.k,
       g: food.r || 100
     });
-    saveNutrition();
+    if (!saveNutrition()) { nutri.items.pop(); return; }
     renderDay();
     const prot = Math.round((food.p * (food.r || 100)) / 100 * 10) / 10;
     toast(food.n + ': ' + (food.r || 100) + ' g → ' + prot + ' g de proteína', 'ok');
@@ -3125,8 +3136,9 @@
       return;
     }
     if (!confirm('¿Vaciar todos los alimentos de hoy?')) return;
+    const backup = nutri.items;
     nutri.items = [];
-    saveNutrition();
+    if (!saveNutrition()) { nutri.items = backup; return; }
     renderDay();
     toast('Día vaciado.');
   });
@@ -3163,6 +3175,8 @@
     );
     if (!ok) return;
 
+    const backupRoutines = JSON.parse(JSON.stringify(routines));
+
     SAMPLE_ROUTINES_DATA.forEach(sample => {
       let routine = routines.find(r => r.name === sample.name);
       if (!routine) {
@@ -3191,7 +3205,7 @@
       });
     });
 
-    saveRoutines();
+    if (!saveRoutines()) { routines = backupRoutines; return; }
     const firstLoaded = routines.find(r => r.name === SAMPLE_ROUTINES_DATA[0].name);
     if (firstLoaded) openRoutineId = firstLoaded.id;
     render();
@@ -3280,7 +3294,7 @@
           notes: item.tip,
           variants: []
         });
-        saveRoutines();
+        if (!saveRoutines()) { routine.exercises.pop(); return; }
         render();
         toast('"' + item.n + '" añadido a "' + routine.name + '".', 'ok');
       });
@@ -3345,11 +3359,13 @@
       );
       if (!ok) return;
 
+      const backupRoutines = routines;
+      const backupNutri = nutri;
       routines = data.routines;
-      saveRoutines();
+      if (!saveRoutines()) { routines = backupRoutines; return; }
       if (data.nutricion && typeof data.nutricion === 'object') {
         nutri = data.nutricion;
-        saveNutrition();
+        if (!saveNutrition()) { nutri = backupNutri; return; }
       }
       render();
       renderDay();
