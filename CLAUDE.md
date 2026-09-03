@@ -33,10 +33,19 @@ El botón para cargar las rutinas/ejercicios personales del usuario (`SAMPLE_ROU
 - Para verlo: abrir la app añadiendo `#misdatos` al final de la URL (ej. `entreno.html#misdatos`). Queda activado también en futuras visitas (se guarda en `localStorage` bajo la clave `gym-dev-mode`).
 - Para volver a ocultarlo: abrir la app con `#publico` al final de la URL.
 
+## Despliegue (Vercel)
+
+La app está publicada en: **https://mi-gym-app-inky.vercel.app**
+
+- Proyecto de Vercel: `mario-dev1/mi-gym-app` (cuenta de Vercel iniciada con Google).
+- El repositorio de GitHub (`mario-dev-code/mi-gym-app`) está conectado al proyecto de Vercel (se instaló la GitHub App "Vercel" con acceso a ese repo desde `github.com/settings/installations`). Esto significa que **cada `git push` a la rama `main` despliega solo, automáticamente** — no hace falta ejecutar ningún comando de despliegue a mano.
+- Este equipo tiene instalados Node.js y el CLI de Vercel (`npm install -g vercel`) por si algún día hiciera falta desplegar manualmente (`vercel deploy --prod`), aunque con el repo conectado no debería ser necesario.
+- La carpeta `.vercel/` (config local del CLI) está en `.gitignore` y no se sube al repositorio.
+
 ## Sobre mí (el usuario)
 
 Soy principiante total en programación. Las explicaciones deben ser sencillas, paso a paso, y sin dar por hecho conocimientos previos (ni de programación en general ni de términos técnicos).
 
 ## Recordatorio de flujo de trabajo
 
-Después de cualquier cambio en este proyecto, hay que hacer commit y push a GitHub.
+Después de cualquier cambio en este proyecto, hay que hacer commit y push a GitHub (rama `main`). Con el repo conectado a Vercel, ese push ya despliega la app publicada solo — no hace falta ningún paso manual extra.
