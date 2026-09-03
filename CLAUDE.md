@@ -2,12 +2,13 @@
 
 ## Qué hace la app
 
-Es una app web (marca: "Forja") con dos secciones, accesibles por pestañas arriba:
+Es una app web (marca: "Forja") con tres secciones, accesibles por pestañas arriba:
 
-1. **Rutinas**: crear rutinas (por ejemplo "Pierna" o "Pecho y tríceps"), añadir ejercicios a cada una con peso, series/reps y notas, marcar variantes del mismo ejercicio (por ejemplo si se hace en otro gimnasio o con otra máquina), y marcar qué rutinas se completaron cada semana.
+1. **Rutinas**: crear rutinas (por ejemplo "Pierna" o "Pecho y tríceps"), añadir ejercicios a cada una con peso, series/reps y notas, marcar variantes del mismo ejercicio (por ejemplo si se hace en otro gimnasio o con otra máquina), y marcar qué rutinas se completaron cada semana. También tiene un panel de **copia de seguridad** (exportar/importar) para descargar todos los datos como un archivo `.json` y poder restaurarlos en otro navegador o dispositivo.
 2. **Proteína**: calculadora de macros. Tiene una base de datos de ~100 alimentos cotidianos (pollo, atún, arroz, huevo, legumbres, frutas, verduras, lácteos, suplementos, etc.) con proteína/carbohidratos/grasas/calorías por 100 g. Se busca un alimento, se añade con una ración por defecto (editable en gramos) y se suma automáticamente a un resumen del día, comparado con un objetivo de proteína calculado a partir del peso del usuario y un ratio g/kg elegido.
+3. **Ejercicios**: biblioteca de ~40 ejercicios recomendados, organizados por grupo muscular (Pecho, Espalda, Pierna, Hombro, Bíceps, Tríceps, Core, Glúteo) con series/reps sugeridas y un consejo de ejecución. Cada ejercicio se puede añadir con un clic directamente a una de las rutinas ya creadas.
 
-Todos los datos se guardan localmente en el navegador (`localStorage`), no hay servidor ni base de datos externa. Las comidas del día de la calculadora se reinician solas cada día nuevo (se guardan bajo la clave `gym-nutricion`, junto con la fecha).
+Todos los datos se guardan localmente en el navegador (`localStorage`), no hay servidor ni base de datos externa. Las comidas del día de la calculadora se reinician solas cada día nuevo (se guardan bajo la clave `gym-nutricion`, junto con la fecha). Por eso los datos solo persisten en el mismo navegador/dispositivo (no se sincronizan entre varios); para eso está la copia de seguridad exportable.
 
 ## Estilo visual
 
