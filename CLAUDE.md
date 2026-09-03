@@ -4,9 +4,9 @@
 
 Es una app web (marca: "Forja") con tres secciones, accesibles por pestañas arriba:
 
-1. **Rutinas**: no hay rutinas por defecto — la primera vez, el usuario elige entre el botón **"Split clásico (5 días)"** (crea "Pecho y tríceps", "Espalda y bíceps", "Pierna", "Hombro", "Pecho y espalda") o **"Crear mi split"** (checkboxes para elegir grupos musculares sueltos: Pecho, Espalda, Pierna, Hombro, Bíceps, Tríceps, Core, Glúteo, uno por rutina). También se puede crear una rutina con nombre libre desde el botón **+**. Dentro de cada rutina se añaden ejercicios con peso, series/reps y notas, se marcan variantes del mismo ejercicio (por ejemplo si se hace en otro gimnasio o con otra máquina), y se marca qué rutinas se completaron cada semana. También tiene un panel de **copia de seguridad** (exportar/importar) para descargar todos los datos como un archivo `.json` y poder restaurarlos en otro navegador o dispositivo.
+1. **Rutinas**: no hay rutinas por defecto — la primera vez, el usuario elige entre el botón **"Split clásico (5 días)"** (crea "Pecho y tríceps", "Espalda y bíceps", "Pierna", "Hombro", "Pecho y espalda") o **"Crear mi split"** (checkboxes para elegir grupos musculares sueltos: Pecho, Espalda, Pierna, Hombro, Bíceps, Tríceps, Core, Glúteo, uno por rutina). También se puede crear una rutina con nombre libre desde el botón **+**, y borrarlas todas de golpe con **"Borrar split"** (pide confirmación en una pantalla propia, no un `confirm()` del navegador). Dentro de cada rutina se añaden ejercicios con peso, series/reps y notas, se marcan variantes del mismo ejercicio (por ejemplo si se hace en otro gimnasio o con otra máquina), y se marca qué rutinas se completaron cada semana. También tiene un panel de **copia de seguridad** (exportar/importar) para descargar todos los datos como un archivo `.json` y poder restaurarlos en otro navegador o dispositivo.
 2. **Proteína**: calculadora de macros. Tiene una base de datos de ~100 alimentos cotidianos (pollo, atún, arroz, huevo, legumbres, frutas, verduras, lácteos, suplementos, etc.) con proteína/carbohidratos/grasas/calorías por 100 g. Se busca un alimento, se añade con una ración por defecto (editable en gramos) y se suma automáticamente a un resumen del día, comparado con un objetivo de proteína calculado a partir del peso del usuario y un ratio g/kg elegido.
-3. **Ejercicios**: biblioteca de ~40 ejercicios recomendados, organizados por grupo muscular (Pecho, Espalda, Pierna, Hombro, Bíceps, Tríceps, Core, Glúteo) con series/reps sugeridas y un consejo de ejecución. Cada ejercicio se puede añadir con un clic directamente a una de las rutinas ya creadas.
+3. **Ejercicios**: biblioteca de ~64 ejercicios recomendados, organizados por grupo muscular (Pecho, Espalda, Pierna, Hombro, Bíceps, Tríceps, Core, Glúteo) con series/reps sugeridas y un consejo de ejecución. Cada ejercicio se puede añadir con un clic a una rutina ya creada; el desplegable de rutina empieza vacío a propósito (no preselecciona ninguna) para evitar añadir el ejercicio a la rutina equivocada sin darse cuenta.
 
 Todos los datos se guardan localmente en el navegador (`localStorage`), no hay servidor ni base de datos externa. Las comidas del día de la calculadora se reinician solas cada día nuevo (se guardan bajo la clave `gym-nutricion`, junto con la fecha). Por eso los datos solo persisten en el mismo navegador/dispositivo (no se sincronizan entre varios); para eso está la copia de seguridad exportable.
 
@@ -26,6 +26,10 @@ Pensado para parecer un producto real, no un prototipo:
 
 - `entreno.html` es el archivo principal de la app (todo el HTML, CSS y JS está en ese único archivo).
 - `index.html` existe solo para redirigir automáticamente a `entreno.html` en cuanto se abre (así el link raíz del proyecto lleva directo a la app).
+
+## Guardado de datos (patrón a seguir en nuevas funciones)
+
+`saveRoutines()` y `saveNutrition()` devuelven `true`/`false` según si `localStorage` aceptó el guardado (puede fallar por ejemplo en modo incógnito). Cualquier acción nueva que modifique `routines` o `nutri` debe seguir este patrón: aplicar el cambio en memoria, llamar a `saveRoutines()`/`saveNutrition()`, y si devuelve `false`, deshacer el cambio en memoria y salir sin mostrar un mensaje de éxito. Así se evita el bug que hubo antes: mostrar "no se pudo guardar" seguido igualmente de un mensaje de éxito contradictorio, y dejar en pantalla datos que en realidad no se habían guardado.
 
 ## Modo "mis datos" (oculto en la versión pública)
 
