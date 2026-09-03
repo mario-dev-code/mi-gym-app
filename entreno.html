@@ -1186,6 +1186,36 @@
     flex-shrink: 0;
   }
 
+  .split-check-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .split-check {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    user-select: none;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .split-check:hover { border-color: var(--border-strong); }
+
+  .split-check input {
+    accent-color: var(--accent);
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
   .day-item {
     display: grid;
     grid-template-columns: 1fr 92px auto;
@@ -1408,7 +1438,8 @@
     <div id="routines-container"></div>
 
     <div class="row-actions" style="margin-top:16px">
-      <button class="btn-neutral" id="restore-defaults">Crear los 5 días típicos</button>
+      <button class="btn-neutral" id="restore-defaults">🗓️ Split clásico (5 días)</button>
+      <button class="btn-neutral" id="create-custom-split">🎯 Crear mi split</button>
     </div>
 
     <div class="panel" style="margin-top:16px">
@@ -1579,6 +1610,20 @@
     <div class="row-actions">
       <button class="btn-outline" id="cancel-routine">Cancelar</button>
       <button class="btn-primary" id="confirm-routine">Crear</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="custom-split-modal-overlay">
+  <div class="modal">
+    <h2>Crea tu split</h2>
+    <p class="nut-note" style="margin:0 0 12px">
+      Elige los grupos musculares que quieras como rutinas independientes.
+    </p>
+    <div class="split-check-grid" id="split-check-grid"></div>
+    <div class="row-actions">
+      <button class="btn-outline" id="cancel-custom-split">Cancelar</button>
+      <button class="btn-primary" id="confirm-custom-split">Crear</button>
     </div>
   </div>
 </div>
@@ -2075,24 +2120,10 @@
     }
   ];
 
-  function makeDefaultRoutines() {
-    return DEFAULT_ROUTINE_NAMES.map(name => ({
-      id: uid(),
-      name,
-      exercises: [],
-      lastDone: null,
-      notes: ''
-    }));
-  }
-
   function loadRoutines() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw === null) {
-        const defaults = makeDefaultRoutines();
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(defaults));
-        return defaults;
-      }
+      if (raw === null) return [];
       return JSON.parse(raw);
     } catch (e) {
       return [];
@@ -2164,7 +2195,8 @@
     if (routines.length === 0) {
       container.innerHTML =
         '<div class="empty-state"><span class="emoji">🏋️</span>' +
-        'Aún no tienes rutinas.<br>Pulsa el botón <b>+</b> de abajo para crear la primera.</div>';
+        'Aún no tienes rutinas.<br>Usa uno de los botones de abajo: el split clásico de 5 días, ' +
+        'o crea el tuyo eligiendo los grupos musculares que quieras.</div>';
       return;
     }
 
@@ -2394,6 +2426,57 @@
     saveRoutines();
     render();
     toast('Añadidas ' + missing.length + ' rutina(s).', 'ok');
+  });
+
+  /* ===================================================================
+     3.5) MODAL: crear mi propio split
+     =================================================================== */
+  const customSplitModal = document.getElementById('custom-split-modal-overlay');
+  const splitCheckGrid = document.getElementById('split-check-grid');
+  const SPLIT_MUSCLE_NAMES = MUSCLE_GROUPS.filter(g => g !== 'Todos');
+
+  SPLIT_MUSCLE_NAMES.forEach(name => {
+    const label = document.createElement('label');
+    label.className = 'split-check';
+    label.innerHTML =
+      '<input type="checkbox" value="' + escapeAttr(name) + '"><span>' + escapeHtml(name) + '</span>';
+    splitCheckGrid.appendChild(label);
+  });
+
+  document.getElementById('create-custom-split').addEventListener('click', () => {
+    splitCheckGrid.querySelectorAll('input[type=checkbox]').forEach(cb => { cb.checked = false; });
+    customSplitModal.classList.add('show');
+  });
+
+  document.getElementById('cancel-custom-split').addEventListener('click', () => {
+    customSplitModal.classList.remove('show');
+  });
+
+  customSplitModal.addEventListener('click', (e) => {
+    if (e.target === customSplitModal) customSplitModal.classList.remove('show');
+  });
+
+  document.getElementById('confirm-custom-split').addEventListener('click', () => {
+    const chosen = Array.from(splitCheckGrid.querySelectorAll('input:checked')).map(cb => cb.value);
+    if (chosen.length === 0) {
+      toast('Elige al menos un grupo muscular.', 'err');
+      return;
+    }
+    const existingNames = routines.map(r => r.name);
+    const toCreate = chosen.filter(name => !existingNames.includes(name));
+
+    if (toCreate.length === 0) {
+      toast('Ya tienes esas rutinas creadas.');
+      customSplitModal.classList.remove('show');
+      return;
+    }
+    toCreate.forEach(name => {
+      routines.push({ id: uid(), name, exercises: [], lastDone: null, notes: '' });
+    });
+    saveRoutines();
+    customSplitModal.classList.remove('show');
+    render();
+    toast('Creadas ' + toCreate.length + ' rutina(s).', 'ok');
   });
 
   /* ===================================================================
@@ -3086,11 +3169,12 @@
       const select = document.createElement('select');
       if (routines.length === 0) {
         select.disabled = true;
-        select.innerHTML = '<option>Sin rutinas</option>';
+        select.innerHTML = '<option value="">Sin rutinas</option>';
       } else {
-        select.innerHTML = routines
-          .map(r => '<option value="' + escapeAttr(r.id) + '">' + escapeHtml(r.name) + '</option>')
-          .join('');
+        select.innerHTML = '<option value="" selected disabled>Elige una rutina</option>' +
+          routines
+            .map(r => '<option value="' + escapeAttr(r.id) + '">' + escapeHtml(r.name) + '</option>')
+            .join('');
       }
 
       const addBtn = document.createElement('button');
@@ -3099,6 +3183,10 @@
       addBtn.textContent = '+ Añadir';
       addBtn.disabled = routines.length === 0;
       addBtn.addEventListener('click', () => {
+        if (!select.value) {
+          toast('Elige antes una rutina en el desplegable.', 'err');
+          return;
+        }
         const routine = routines.find(r => r.id === select.value);
         if (!routine) return;
         routine.exercises.push({
