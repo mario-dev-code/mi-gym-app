@@ -132,6 +132,39 @@
     html { scroll-behavior: auto; }
   }
 
+  /* Iconos muy tenues en los laterales, solo en pantallas anchas donde
+     sobra espacio a los lados de la columna central de contenido. */
+  .side-deco {
+    position: fixed;
+    top: 0;
+    height: 100vh;
+    width: 130px;
+    pointer-events: none;
+    z-index: -1;
+    display: none;
+  }
+
+  .side-deco-left { left: 0; }
+  .side-deco-right { right: 0; }
+
+  .deco-icon {
+    position: absolute;
+    color: var(--text-dim);
+    opacity: 0.09;
+    animation: iconFloat 8s ease-in-out infinite;
+  }
+
+  .deco-icon.accent { color: var(--accent); opacity: 0.13; }
+
+  @keyframes iconFloat {
+    0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+    50% { transform: translateY(-16px) rotate(var(--r, 0deg)); }
+  }
+
+  @media (min-width: 1180px) {
+    .side-deco { display: block; }
+  }
+
   /* ===================================================================
      BARRA SUPERIOR + PESTAÑAS
      =================================================================== */
@@ -695,6 +728,14 @@
     background-repeat: no-repeat;
     background-position: right 11px center;
     padding-right: 32px;
+    /* Sin esto, el desplegable nativo pinta las opciones en texto claro
+       sobre fondo blanco del sistema y se ven "en blanco" (invisibles). */
+    color-scheme: dark;
+  }
+
+  select option {
+    background: var(--card-solid);
+    color: var(--text);
   }
 
   textarea { resize: vertical; margin-top: 10px; }
@@ -1248,6 +1289,22 @@
 </div>
 <div class="bg-grid" aria-hidden="true"></div>
 <div class="bg-noise" aria-hidden="true"></div>
+
+<!-- Iconos muy tenues a los lados, solo visibles en pantallas anchas donde
+     sobra espacio junto a la columna central de contenido. Puramente
+     decorativos (aria-hidden), no aportan información. -->
+<div class="side-deco side-deco-left" aria-hidden="true">
+  <svg class="deco-icon" style="top:10%;left:22px;width:44px;--r:-14deg;animation-delay:0s" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12h2M4 8v8M20 8v8M22 12h-2M6 12h12M6 9v6M18 9v6"/></svg>
+  <svg class="deco-icon accent" style="top:34%;left:46px;width:30px;--r:10deg;animation-delay:1.2s" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2s4 4 4 9a4 4 0 0 1-8 0c0-2 1-3 1-3s-3 2-3 6a6 6 0 0 0 12 0c0-6-6-12-6-12z"/></svg>
+  <svg class="deco-icon" style="top:58%;left:18px;width:36px;--r:-6deg;animation-delay:2.4s" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="8" y="4" width="8" height="4" rx="1"/><path d="M9 8h6l1 12a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2L9 8z"/></svg>
+  <svg class="deco-icon" style="top:82%;left:50px;width:34px;--r:8deg;animation-delay:0.8s" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
+</div>
+<div class="side-deco side-deco-right" aria-hidden="true">
+  <svg class="deco-icon accent" style="top:16%;right:26px;width:32px;--r:12deg;animation-delay:1.6s" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2s4 4 4 9a4 4 0 0 1-8 0c0-2 1-3 1-3s-3 2-3 6a6 6 0 0 0 12 0c0-6-6-12-6-12z"/></svg>
+  <svg class="deco-icon" style="top:40%;right:50px;width:44px;--r:14deg;animation-delay:0.4s" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12h2M4 8v8M20 8v8M22 12h-2M6 12h12M6 9v6M18 9v6"/></svg>
+  <svg class="deco-icon" style="top:64%;right:20px;width:34px;--r:-8deg;animation-delay:2s" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="8" y="4" width="8" height="4" rx="1"/><path d="M9 8h6l1 12a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2L9 8z"/></svg>
+  <svg class="deco-icon" style="top:87%;right:46px;width:28px;--r:-10deg;animation-delay:1.1s" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
+</div>
 
 <header class="topbar">
   <div class="topbar-inner">
