@@ -1145,6 +1145,47 @@
     font-family: "Oswald", sans-serif;
   }
 
+  .exlib-item {
+    cursor: default;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .exlib-item:hover {
+    border-color: var(--border);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .exlib-tip {
+    margin-top: 5px;
+    font-size: 0.76rem;
+    color: var(--text-dim);
+    line-height: 1.4;
+    max-width: 46ch;
+  }
+
+  .exlib-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  .exlib-actions select {
+    padding: 7px 26px 7px 9px;
+    font-size: 0.72rem;
+    max-width: 130px;
+    background-position: right 8px center;
+  }
+
+  .exlib-actions .btn-primary {
+    padding: 8px 12px;
+    font-size: 0.72rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
   .day-item {
     display: grid;
     grid-template-columns: 1fr 92px auto;
@@ -1315,6 +1356,7 @@
     <nav class="tabs">
       <button class="tab active" data-view="rutinas">Rutinas</button>
       <button class="tab" data-view="nutricion">Proteína</button>
+      <button class="tab" data-view="ejercicios">Ejercicios</button>
     </nav>
     <button class="btn-ghost" id="load-sample-data" hidden>Mis datos</button>
   </div>
@@ -1367,6 +1409,21 @@
 
     <div class="row-actions" style="margin-top:16px">
       <button class="btn-neutral" id="restore-defaults">Crear los 5 días típicos</button>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <div class="section-head" style="margin:0 0 8px">
+        <h2 style="font-size:0.95rem">Copia de seguridad</h2>
+      </div>
+      <p class="nut-note" style="margin:0 0 12px">
+        Tus rutinas y tu proteína se guardan solo en este navegador. Descarga una copia
+        para no perderlas si cambias de navegador, de móvil, o borras los datos del sitio.
+      </p>
+      <div class="row-actions">
+        <button class="btn-outline" id="export-data">⭳ Exportar copia</button>
+        <button class="btn-outline" id="import-data">⭱ Importar copia</button>
+      </div>
+      <input type="file" id="import-file-input" accept="application/json" hidden>
     </div>
   </section>
 
@@ -1484,6 +1541,25 @@
     </div>
   </section>
 
+  <!-- ========================= VISTA: EJERCICIOS ========================= -->
+  <section class="view" id="view-ejercicios">
+
+    <div class="hero">
+      <span class="pill"><span class="pill-dot"></span> Guía rápida</span>
+      <h1>Ejercicios <em>recomendados</em></h1>
+      <p class="hero-sub">
+        Ejercicios clásicos organizados por grupo muscular, con un consejo rápido de
+        ejecución. Añádelos directamente a una de tus rutinas con un clic.
+      </p>
+    </div>
+
+    <div class="panel">
+      <div class="cat-chips" id="muscle-chips"></div>
+      <div class="food-results" id="exlib-results"></div>
+    </div>
+
+  </section>
+
 </main>
 
 <footer>
@@ -1539,6 +1615,61 @@
   const STORAGE_KEY = 'gym-routines';
   const NUTRI_KEY = 'gym-nutricion';
   const DEV_KEY = 'gym-dev-mode';
+
+  const MUSCLE_GROUPS = ['Todos', 'Pecho', 'Espalda', 'Pierna', 'Hombro', 'Bíceps', 'Tríceps', 'Core', 'Glúteo'];
+
+  const EXERCISE_LIBRARY = [
+    { n: 'Press banca con barra', g: 'Pecho', reps: '4x8-10', tip: 'Escápulas retraídas y pies firmes; baja la barra controlada hasta rozar el pecho.' },
+    { n: 'Press inclinado con mancuernas', g: 'Pecho', reps: '4x10-12', tip: 'Banco a 30-45°; no juntes las mancuernas arriba para mantener la tensión.' },
+    { n: 'Aperturas con mancuernas', g: 'Pecho', reps: '3x12-15', tip: 'Codos ligeramente flexionados durante todo el recorrido, no los bloquees.' },
+    { n: 'Fondos en paralelas', g: 'Pecho', reps: '3x8-12', tip: 'Inclina el torso hacia delante para enfatizar el pecho sobre el tríceps.' },
+    { n: 'Cruce de poleas', g: 'Pecho', reps: '3x12-15', tip: 'Junta las manos delante del cuerpo y aprieta el pecho al final del recorrido.' },
+    { n: 'Press en máquina / Smith', g: 'Pecho', reps: '3x10-12', tip: 'Buena opción para rematar el ejercicio sin necesitar ayuda de un compañero.' },
+
+    { n: 'Dominadas', g: 'Espalda', reps: '4x6-10', tip: 'Tira con los codos hacia abajo y atrás, no solo con los brazos.' },
+    { n: 'Remo con barra', g: 'Espalda', reps: '4x8-10', tip: 'Espalda recta, tira hacia el abdomen apretando los omóplatos.' },
+    { n: 'Remo con mancuerna a una mano', g: 'Espalda', reps: '3x10-12', tip: 'Apoya rodilla y mano en el banco para aislar bien el lado que trabaja.' },
+    { n: 'Jalón al pecho', g: 'Espalda', reps: '4x10-12', tip: 'Baja la barra hacia la parte alta del pecho, sin balancear el torso.' },
+    { n: 'Remo en polea baja', g: 'Espalda', reps: '3x10-12', tip: 'Mantén la espalda estable; el movimiento lo hacen los brazos y los omóplatos.' },
+    { n: 'Peso muerto', g: 'Espalda', reps: '3x5-8', tip: 'Espalda siempre recta; empuja el suelo con los pies al subir la barra.' },
+
+    { n: 'Sentadilla con barra', g: 'Pierna', reps: '4x6-10', tip: 'Rodillas en línea con los pies; baja hasta que el muslo pase de paralelo si puedes.' },
+    { n: 'Prensa de piernas', g: 'Pierna', reps: '4x10-12', tip: 'No bloquees del todo las rodillas arriba ni despegues la zona lumbar del respaldo.' },
+    { n: 'Zancadas', g: 'Pierna', reps: '3x10-12 por pierna', tip: 'Paso amplio y rodilla trasera casi rozando el suelo, torso erguido.' },
+    { n: 'Peso muerto rumano', g: 'Pierna', reps: '3x8-10', tip: 'Rodillas casi rectas; baja la barra pegada a las piernas notando el estiramiento en isquios.' },
+    { n: 'Extensión de cuádriceps', g: 'Pierna', reps: '3x12-15', tip: 'Controla la bajada, no dejes caer el peso de golpe.' },
+    { n: 'Curl femoral', g: 'Pierna', reps: '3x12-15', tip: 'Aprieta al final del recorrido y evita levantar la cadera del banco.' },
+    { n: 'Elevación de talones (gemelo)', g: 'Pierna', reps: '4x15-20', tip: 'Sube todo lo posible y baja hasta notar el estiramiento del gemelo.' },
+
+    { n: 'Press militar', g: 'Hombro', reps: '4x8-10', tip: 'No arquees la zona lumbar; aprieta el core al empujar la barra sobre la cabeza.' },
+    { n: 'Elevaciones laterales', g: 'Hombro', reps: '3x12-15', tip: 'Codos ligeramente flexionados, sube hasta la altura del hombro y no más.' },
+    { n: 'Elevaciones frontales', g: 'Hombro', reps: '3x12-15', tip: 'Sube el peso sin impulso, controlando también la bajada.' },
+    { n: 'Pájaros (deltoide posterior)', g: 'Hombro', reps: '3x12-15', tip: 'Inclina el torso adelante y separa los brazos como si abrieras alas.' },
+    { n: 'Press Arnold', g: 'Hombro', reps: '3x10-12', tip: 'Gira las muñecas al subir; trabaja todo el deltoides en un solo movimiento.' },
+
+    { n: 'Curl con barra', g: 'Bíceps', reps: '3x8-10', tip: 'Codos pegados al cuerpo, evita balancear la espalda para ayudarte.' },
+    { n: 'Curl con mancuernas alterno', g: 'Bíceps', reps: '3x10-12', tip: 'Gira la muñeca hacia fuera al subir para contraer mejor el bíceps.' },
+    { n: 'Curl martillo', g: 'Bíceps', reps: '3x10-12', tip: 'Agarre neutro (palmas encaradas); también trabaja el antebrazo.' },
+    { n: 'Curl en polea', g: 'Bíceps', reps: '3x12-15', tip: 'Mantiene tensión constante en el bíceps durante todo el recorrido.' },
+
+    { n: 'Press francés', g: 'Tríceps', reps: '3x10-12', tip: 'Solo mueve el antebrazo; codos fijos apuntando al techo.' },
+    { n: 'Extensión de tríceps en polea', g: 'Tríceps', reps: '3x12-15', tip: 'Codos pegados al cuerpo, extiende del todo apretando el tríceps.' },
+    { n: 'Fondos en banco', g: 'Tríceps', reps: '3x10-15', tip: 'No bajes demasiado para cuidar el hombro; codos hacia atrás, no hacia fuera.' },
+    { n: 'Patada de tríceps', g: 'Tríceps', reps: '3x12-15', tip: 'Torso inclinado y brazo pegado al cuerpo; extiende solo el antebrazo.' },
+
+    { n: 'Plancha', g: 'Core', reps: '3x30-60 seg', tip: 'Cuerpo en línea recta, aprieta abdomen y glúteo; no dejes caer la cadera.' },
+    { n: 'Crunch abdominal', g: 'Core', reps: '3x15-20', tip: 'Sube solo con el abdomen, sin tirar del cuello con las manos.' },
+    { n: 'Elevación de piernas colgado', g: 'Core', reps: '3x10-15', tip: 'Evita balancearte; sube las piernas controlando con el abdomen.' },
+    { n: 'Rueda abdominal', g: 'Core', reps: '3x8-12', tip: 'Extiende solo hasta donde controles, sin arquear la zona lumbar.' },
+    { n: 'Giro ruso', g: 'Core', reps: '3x16-20', tip: 'Pies un poco elevados si puedes; gira desde el torso, no solo con los brazos.' },
+
+    { n: 'Hip thrust', g: 'Glúteo', reps: '4x8-12', tip: 'Barra sobre la cadera; sube apretando fuerte el glúteo arriba del todo.' },
+    { n: 'Peso muerto sumo', g: 'Glúteo', reps: '3x6-10', tip: 'Piernas más abiertas que en el peso muerto normal, puntas ligeramente hacia fuera.' },
+    { n: 'Patada de glúteo en polea', g: 'Glúteo', reps: '3x12-15', tip: 'Empuja el talón hacia atrás y arriba, sin arquear la espalda.' },
+    { n: 'Puente de glúteo', g: 'Glúteo', reps: '3x15-20', tip: 'Aprieta el glúteo un segundo arriba antes de bajar.' }
+  ];
+
+  let activeMuscleGroup = 'Todos';
 
   function uid() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1599,6 +1730,8 @@
       });
       // El botón "+" solo tiene sentido en la pestaña de rutinas.
       fab.hidden = view !== 'rutinas';
+      // Refresca la lista de rutinas disponibles en los desplegables.
+      if (view === 'ejercicios') renderExerciseLibrary();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   });
@@ -2841,12 +2974,16 @@
   const sampleBtn = document.getElementById('load-sample-data');
 
   function applyDevMode() {
-    if (location.hash === '#misdatos') {
-      localStorage.setItem(DEV_KEY, '1');
-    } else if (location.hash === '#publico') {
-      localStorage.removeItem(DEV_KEY);
+    try {
+      if (location.hash === '#misdatos') {
+        localStorage.setItem(DEV_KEY, '1');
+      } else if (location.hash === '#publico') {
+        localStorage.removeItem(DEV_KEY);
+      }
+      sampleBtn.hidden = localStorage.getItem(DEV_KEY) !== '1';
+    } catch (e) {
+      sampleBtn.hidden = true;
     }
-    sampleBtn.hidden = localStorage.getItem(DEV_KEY) !== '1';
   }
 
   applyDevMode();
@@ -2896,12 +3033,170 @@
   });
 
   /* ===================================================================
-     8) ARRANQUE
+     8) EJERCICIOS RECOMENDADOS (biblioteca por grupo muscular)
+     Datos (MUSCLE_GROUPS, EXERCISE_LIBRARY, activeMuscleGroup) definidos
+     arriba, junto a STORAGE_KEY/NUTRI_KEY, para que estén listos antes
+     de que se pueda pulsar la pestaña "Ejercicios".
+     =================================================================== */
+  const muscleChipsWrap = document.getElementById('muscle-chips');
+
+  MUSCLE_GROUPS.forEach(g => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'cat-chip' + (g === 'Todos' ? ' active' : '');
+    chip.textContent = g;
+    chip.addEventListener('click', () => {
+      activeMuscleGroup = g;
+      muscleChipsWrap.querySelectorAll('.cat-chip').forEach(c => c.classList.toggle('active', c === chip));
+      renderExerciseLibrary();
+    });
+    muscleChipsWrap.appendChild(chip);
+  });
+
+  function renderExerciseLibrary() {
+    const wrap = document.getElementById('exlib-results');
+    const list = activeMuscleGroup === 'Todos'
+      ? EXERCISE_LIBRARY
+      : EXERCISE_LIBRARY.filter(item => item.g === activeMuscleGroup);
+
+    wrap.innerHTML = '';
+
+    if (routines.length === 0) {
+      const hint = document.createElement('p');
+      hint.className = 'nut-note';
+      hint.style.margin = '0 0 10px';
+      hint.textContent = 'Crea una rutina en la pestaña "Rutinas" para poder añadir estos ejercicios con un clic.';
+      wrap.appendChild(hint);
+    }
+
+    list.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'food-item exlib-item';
+
+      const left = document.createElement('div');
+      left.className = 'food-item-name';
+      left.innerHTML =
+        '<strong>' + escapeHtml(item.n) + '</strong>' +
+        '<em>' + escapeHtml(item.g) + ' · ' + escapeHtml(item.reps) + '</em>' +
+        '<div class="exlib-tip">' + escapeHtml(item.tip) + '</div>';
+
+      const actions = document.createElement('div');
+      actions.className = 'exlib-actions';
+
+      const select = document.createElement('select');
+      if (routines.length === 0) {
+        select.disabled = true;
+        select.innerHTML = '<option>Sin rutinas</option>';
+      } else {
+        select.innerHTML = routines
+          .map(r => '<option value="' + escapeAttr(r.id) + '">' + escapeHtml(r.name) + '</option>')
+          .join('');
+      }
+
+      const addBtn = document.createElement('button');
+      addBtn.type = 'button';
+      addBtn.className = 'btn-primary';
+      addBtn.textContent = '+ Añadir';
+      addBtn.disabled = routines.length === 0;
+      addBtn.addEventListener('click', () => {
+        const routine = routines.find(r => r.id === select.value);
+        if (!routine) return;
+        routine.exercises.push({
+          id: uid(),
+          name: item.n,
+          weight: '',
+          reps: item.reps,
+          notes: item.tip,
+          variants: []
+        });
+        saveRoutines();
+        render();
+        toast('"' + item.n + '" añadido a "' + routine.name + '".', 'ok');
+      });
+
+      actions.appendChild(select);
+      actions.appendChild(addBtn);
+
+      row.appendChild(left);
+      row.appendChild(actions);
+      wrap.appendChild(row);
+    });
+  }
+
+  /* ===================================================================
+     9) COPIA DE SEGURIDAD (exportar / importar)
+     =================================================================== */
+  document.getElementById('export-data').addEventListener('click', () => {
+    const backup = {
+      app: 'forja',
+      exportedAt: new Date().toISOString(),
+      routines: routines,
+      nutricion: nutri
+    };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'forja-copia-' + todayStr() + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast('Copia descargada.', 'ok');
+  });
+
+  const importInput = document.getElementById('import-file-input');
+
+  document.getElementById('import-data').addEventListener('click', () => {
+    importInput.value = '';
+    importInput.click();
+  });
+
+  importInput.addEventListener('change', () => {
+    const file = importInput.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      let data;
+      try {
+        data = JSON.parse(reader.result);
+      } catch (e) {
+        toast('Ese archivo no es una copia de seguridad válida.', 'err');
+        return;
+      }
+      if (!data || !Array.isArray(data.routines)) {
+        toast('Ese archivo no es una copia de seguridad válida.', 'err');
+        return;
+      }
+      const ok = confirm(
+        'Esto reemplaza tus rutinas y tu proteína actuales por las del archivo importado. ¿Continuar?'
+      );
+      if (!ok) return;
+
+      routines = data.routines;
+      saveRoutines();
+      if (data.nutricion && typeof data.nutricion === 'object') {
+        nutri = data.nutricion;
+        saveNutrition();
+      }
+      render();
+      renderDay();
+      renderTotals();
+      renderExerciseLibrary();
+      toast('Copia importada.', 'ok');
+    };
+    reader.readAsText(file);
+  });
+
+  /* ===================================================================
+     10) ARRANQUE
      =================================================================== */
   render();
   updateGoalText();
   renderFoodResults();
   renderDay();
+  renderExerciseLibrary();
 </script>
 
 </body>
