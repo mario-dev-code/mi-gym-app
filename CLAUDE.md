@@ -1,20 +1,37 @@
-# Mis Rutinas de Gym
+# FORJA — Mis Rutinas de Gym
 
 ## Qué hace la app
 
-Es una app web para organizar rutinas de gimnasio. Permite crear rutinas (por ejemplo "Pierna" o "Pecho y tríceps"), añadir ejercicios a cada una con peso, series/reps y notas, marcar variantes del mismo ejercicio (por ejemplo si se hace en otro gimnasio o con otra máquina), y marcar qué rutinas se completaron cada semana. Todos los datos se guardan localmente en el navegador (`localStorage`), no hay servidor ni base de datos externa.
+Es una app web (marca: "Forja") con dos secciones, accesibles por pestañas arriba:
+
+1. **Rutinas**: crear rutinas (por ejemplo "Pierna" o "Pecho y tríceps"), añadir ejercicios a cada una con peso, series/reps y notas, marcar variantes del mismo ejercicio (por ejemplo si se hace en otro gimnasio o con otra máquina), y marcar qué rutinas se completaron cada semana.
+2. **Proteína**: calculadora de macros. Tiene una base de datos de ~100 alimentos cotidianos (pollo, atún, arroz, huevo, legumbres, frutas, verduras, lácteos, suplementos, etc.) con proteína/carbohidratos/grasas/calorías por 100 g. Se busca un alimento, se añade con una ración por defecto (editable en gramos) y se suma automáticamente a un resumen del día, comparado con un objetivo de proteína calculado a partir del peso del usuario y un ratio g/kg elegido.
+
+Todos los datos se guardan localmente en el navegador (`localStorage`), no hay servidor ni base de datos externa. Las comidas del día de la calculadora se reinician solas cada día nuevo (se guardan bajo la clave `gym-nutricion`, junto con la fecha).
 
 ## Estilo visual
 
-- Fondo oscuro (negro/gris muy oscuro).
-- Color de acento: naranja.
-- Tipografía en mayúsculas y negrita para títulos y nombres de rutina/ejercicio (fuente Oswald).
-- Tarjetas redondeadas con bordes sutiles.
+Pensado para parecer un producto real, no un prototipo:
+
+- Fondo oscuro con varias capas: un degradado de base, 3 "manchas" de color (naranja/ámbar/violeta) animadas muy lentamente de fondo (`.orb-1/2/3`), una rejilla sutil y un grano/ruido muy ligero. Todo desactivable automáticamente si el usuario tiene activado "reducir movimiento" en su sistema.
+- Color de acento: naranja (con un segundo tono ámbar de apoyo para degradados).
+- Tarjetas con fondo semitransparente + `backdrop-filter: blur()` (efecto "glass").
+- Tipografía en mayúsculas y negrita para títulos y nombres de rutina/ejercicio (fuente Oswald); el cuerpo de texto usa Inter.
+- Sección "hero" al principio de cada pestaña con título grande, texto de apoyo y estadísticas rápidas.
+- Avisos flotantes ("toasts") abajo en vez de `alert()` del navegador.
+- Anillo de progreso circular (SVG) para la proteína del día.
 
 ## Archivos principales
 
 - `entreno.html` es el archivo principal de la app (todo el HTML, CSS y JS está en ese único archivo).
 - `index.html` existe solo para redirigir automáticamente a `entreno.html` en cuanto se abre (así el link raíz del proyecto lleva directo a la app).
+
+## Modo "mis datos" (oculto en la versión pública)
+
+El botón para cargar las rutinas/ejercicios personales del usuario (`SAMPLE_ROUTINES_DATA` en el JS) está oculto por defecto porque la app está pensada para publicarse/compartirse y ese botón no debe verlo cualquier visitante.
+
+- Para verlo: abrir la app añadiendo `#misdatos` al final de la URL (ej. `entreno.html#misdatos`). Queda activado también en futuras visitas (se guarda en `localStorage` bajo la clave `gym-dev-mode`).
+- Para volver a ocultarlo: abrir la app con `#publico` al final de la URL.
 
 ## Sobre mí (el usuario)
 
